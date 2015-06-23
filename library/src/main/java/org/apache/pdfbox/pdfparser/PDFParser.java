@@ -16,11 +16,6 @@ import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.io.PushBackInputStream;
 import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
-import org.apache.pdfbox.pdmodel.encryption.DecryptionMaterial;
-import org.apache.pdfbox.pdmodel.encryption.PDEncryption;
-import org.apache.pdfbox.pdmodel.encryption.PublicKeyDecryptionMaterial;
-import org.apache.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
 
 import android.util.Log;
 
@@ -30,8 +25,6 @@ public class PDFParser extends COSParser
     private String password = "";
     private InputStream keyStoreInputStream = null;
     private String keyAlias = null;
-
-    private AccessPermission accessPermission;
 
     private static final InputStream EMPTY_INPUT_STREAM = new ByteArrayInputStream(new byte[0]);
 
@@ -276,7 +269,7 @@ public class PDFParser extends COSParser
      */
     public PDDocument getPDDocument() throws IOException
     {
-        return new PDDocument( getDocument(), this, accessPermission );
+        return new PDDocument( getDocument(), this, null );
     }
 
     /**
@@ -299,9 +292,7 @@ public class PDFParser extends COSParser
         {
             trailer = rebuildTrailer();
         }
-        // prepare decryption if necessary
-        prepareDecryption();
-    
+
         // PDFBOX-1557 - ensure that all COSObject are loaded in the trailer
         // PDFBOX-1606 - after securityHandler has been instantiated
         for (COSBase trailerEntry : trailer.getValues())
@@ -394,55 +385,6 @@ public class PDFParser extends COSParser
             catch (SecurityException e)
             {
             	Log.w("PdfBoxAndroid", "Temporary file '" + tempPDFFile.getName() + "' can't be deleted", e);
-            }
-        }
-    }
-
-    /**
-     * Prepare for decryption.
-     * 
-     * @throws IOException if something went wrong
-     */
-    private void prepareDecryption() throws IOException
-    {
-        COSBase trailerEncryptItem = document.getTrailer().getItem(COSName.ENCRYPT);
-        if (trailerEncryptItem != null && !(trailerEncryptItem instanceof COSNull))
-        {
-            if (trailerEncryptItem instanceof COSObject)
-            {
-                COSObject trailerEncryptObj = (COSObject) trailerEncryptItem;
-                parseDictionaryRecursive(trailerEncryptObj);
-            }
-            try
-            {
-                PDEncryption encryption = new PDEncryption(document.getEncryptionDictionary());
-    
-                DecryptionMaterial decryptionMaterial;
-                if (keyStoreInputStream != null)
-                {
-                    KeyStore ks = KeyStore.getInstance("PKCS12");
-                    ks.load(keyStoreInputStream, password.toCharArray());
-    
-                    decryptionMaterial = new PublicKeyDecryptionMaterial(ks, keyAlias, password);
-                }
-                else
-                {
-                    decryptionMaterial = new StandardDecryptionMaterial(password);
-                }
-    
-                securityHandler = encryption.getSecurityHandler();
-                securityHandler.prepareForDecryption(encryption, document.getDocumentID(),
-                        decryptionMaterial);
-                accessPermission = securityHandler.getCurrentAccessPermission();
-            }
-            catch (IOException e)
-            {
-                throw e;
-            }
-            catch (Exception e)
-            {
-                throw new IOException("Error (" + e.getClass().getSimpleName()
-                        + ") while creating security handler for decryption", e);
             }
         }
     }

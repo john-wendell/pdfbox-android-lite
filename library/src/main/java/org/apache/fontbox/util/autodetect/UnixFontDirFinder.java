@@ -44,9 +44,6 @@ public class UnixFontDirFinder extends NativeFontDirFinder
         };
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public Map<String, String> getCommonTTFMapping()
     {
         HashMap<String,String> map = new HashMap<String,String>();
