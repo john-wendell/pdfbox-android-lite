@@ -426,7 +426,7 @@ public class Type1CharString
 			{
 				Type1CharString base = font.getType1CharString(baseName);
 //				path.append(base.getPath().getPathIterator(null), false); TODO: check this
-				path.op(base.getPath(), Path.Op.UNION);
+//				path.op(base.getPath(), Path.Op.UNION);
 			}
 			catch (IOException e)
 			{
@@ -444,7 +444,7 @@ public class Type1CharString
 						leftSideBearing.x + adx.floatValue(),
 						leftSideBearing.y + ady.floatValue());
 //				path.append(accent.getPath().getPathIterator(at), false); TODO: Check this
-				path.op(accent.getPath(), Path.Op.UNION);
+//				path.op(accent.getPath(), Path.Op.UNION);
 			}
 			catch (IOException e)
 			{

@@ -6,7 +6,7 @@ def groupId = project.PUBLISH_GROUP_ID
 def artifactId = project.PUBLISH_ARTIFACT_ID
 def version = project.PUBLISH_VERSION
 
-def localReleaseDest = "release"
+def localReleaseDest = "${projectDir}/release"
 
 task copyResources(type: Copy) {
     from fileTree('src/main/resources') //.files
@@ -39,8 +39,8 @@ task androidJavadocs(type: Javadoc) {
     ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
     classpath += files(ext.androidJar)
     options {
-        encoding = "windows-1251"
-        title("PdfBox-Android");
+        encoding = "UTF-8"
+        title("pdfbox-android-lite");
         links("http://docs.oracle.com/javase/7/docs/api/");
         linksOffline("http://d.android.com/reference", "${android.sdkDirectory}/docs/reference");
     }
