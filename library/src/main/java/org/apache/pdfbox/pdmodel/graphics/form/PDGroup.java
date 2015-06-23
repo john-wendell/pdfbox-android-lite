@@ -9,7 +9,7 @@ import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 /**
  * Transparency group.
  * 
- * @author K�hn & Weyh Software, GmbH
+ * @author K'hn & Weyh Software, GmbH
  */
 public final class PDGroup implements COSObjectable
 {

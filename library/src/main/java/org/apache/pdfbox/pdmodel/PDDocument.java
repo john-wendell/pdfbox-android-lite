@@ -29,11 +29,6 @@ import org.apache.pdfbox.pdfwriter.COSWriter;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
-import org.apache.pdfbox.pdmodel.encryption.PDEncryption;
-import org.apache.pdfbox.pdmodel.encryption.ProtectionPolicy;
-import org.apache.pdfbox.pdmodel.encryption.SecurityHandler;
-import org.apache.pdfbox.pdmodel.encryption.SecurityHandlerFactory;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
@@ -61,10 +56,6 @@ public class PDDocument implements Closeable
 	private PDDocumentInformation documentInformation;
 	private PDDocumentCatalog documentCatalog;
 
-	// the encryption will be cached here. When the document is decrypted then
-	// the COSDocument will not have an "Encrypt" dictionary anymore and this object must be used
-	private PDEncryption encryption;
-
 	// holds a flag which tells us if we should remove all security from this documents.
 	private boolean allSecurityToBeRemoved;
 
@@ -78,9 +69,6 @@ public class PDDocument implements Closeable
 	// the File to read incremental data from
 	private File incrementalFile;
 
-	// the access permissions of the document
-	private AccessPermission accessPermission;
-	
 	// fonts to subset before saving
 	private final Set<PDFont> fontsToSubset = new HashSet<PDFont>();
 	
@@ -513,11 +501,11 @@ public class PDDocument implements Closeable
 	 * @param usedParser the parser which is used to read the pdf
 	 * @param permission he access permissions of the pdf
 	 */
-	public PDDocument(COSDocument doc, BaseParser usedParser, AccessPermission permission)
+	public PDDocument(COSDocument doc, BaseParser usedParser, Void permission)
 	{
 		document = doc;
 		parser = usedParser;
-		accessPermission = permission;
+
 	}
 
 	/**
@@ -593,35 +581,6 @@ public class PDDocument implements Closeable
 	public boolean isEncrypted()
 	{
 		return document.isEncrypted();
-	}
-
-	/**
-	 * This will get the encryption dictionary for this document. This will still return the parameters if the document
-	 * was decrypted. As the encryption architecture in PDF documents is plugable this returns an abstract class,
-	 * but the only supported subclass at this time is a
-	 * PDStandardEncryption object.
-	 *
-	 * @return The encryption dictionary(most likely a PDStandardEncryption object)
-	 */
-	public PDEncryption getEncryption()
-	{
-		if (encryption == null && isEncrypted())
-		{
-			encryption = new PDEncryption(document.getEncryptionDictionary());
-		}
-		return encryption;
-	}
-
-	/**
-	 * This will set the encryption dictionary for this document.
-	 * 
-	 * @param encryption The encryption dictionary(most likely a PDStandardEncryption object)
-	 * 
-	 * @throws IOException If there is an error determining which security handler to use.
-	 */
-	public void setEncryptionDictionary(PDEncryption encryption) throws IOException
-	{
-		this.encryption = encryption;
 	}
 
 	/**
@@ -1018,49 +977,6 @@ public class PDDocument implements Closeable
 				parser.close();
 			}
 		}
-	}
-
-	/**
-	 * Protects the document with the protection policy pp. The document content will be really encrypted when it will
-	 * be saved. This method only marks the document for encryption.
-	 *
-	 * @see org.apache.pdfbox.pdmodel.encryption.StandardProtectionPolicy
-	 * @see org.apache.pdfbox.pdmodel.encryption.PublicKeyProtectionPolicy
-	 * 
-	 * @param policy The protection policy.
-	 * 
-	 * @throws IOException if there isn't any suitable security handler.
-	 */
-	public void protect(ProtectionPolicy policy) throws IOException
-	{
-		if (!isEncrypted())
-		{
-			encryption = new PDEncryption();
-		}
-
-		SecurityHandler securityHandler = SecurityHandlerFactory.INSTANCE.newSecurityHandlerForPolicy(policy);
-		if (securityHandler == null)
-		{
-			throw new IOException("No security handler for policy " + policy);
-		}
-
-		getEncryption().setSecurityHandler(securityHandler);
-	}
-
-	/**
-	 * Returns the access permissions granted when the document was decrypted. If the document was not decrypted this
-	 * method returns the access permission for a document owner (ie can do everything). The returned object is in read
-	 * only mode so that permissions cannot be changed. Methods providing access to content should rely on this object
-	 * to verify if the current user is allowed to proceed.
-	 * 
-	 * @return the access permissions for the current user on the document.
-	 */
-	public AccessPermission getCurrentAccessPermission()
-	{
-		if(accessPermission == null) {
-			accessPermission = AccessPermission.getOwnerAccessPermission();
-		}
-		return accessPermission;
 	}
 
 	/**

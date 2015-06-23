@@ -32,7 +32,6 @@ import org.apache.pdfbox.cos.COSObjectKey;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdfparser.XrefTrailerResolver.XRefType;
-import org.apache.pdfbox.pdmodel.encryption.SecurityHandler;
 
 import android.util.Log;
 
@@ -110,11 +109,6 @@ public class COSParser extends BaseParser
 	private List<Long> bfSearchXRefTablesOffsets = null;
 	private List<Long> bfSearchXRefStreamsOffsets = null;
 
-	/**
-	 * The security handler.
-	 */
-	protected SecurityHandler securityHandler = null;
-	
 	/**
 	 * how many trailing bytes to read for EOF marker
 	 */
@@ -705,10 +699,6 @@ public class COSParser extends BaseParser
 					{
 						COSStream stream = parseCOSStream((COSDictionary) pb);
 
-						if (securityHandler != null)
-						{
-							securityHandler.decryptStream(stream, objNr, objGenNr);
-						}
 						pb = stream;
 					}
 					else
@@ -733,10 +723,6 @@ public class COSParser extends BaseParser
 							endObjectKey = readLine();
 						}
 					}
-				}
-				else if (securityHandler != null)
-				{
-					securityHandler.decrypt(pb, objNr, objGenNr);
 				}
 
 				pdfObject.setObject(pb);

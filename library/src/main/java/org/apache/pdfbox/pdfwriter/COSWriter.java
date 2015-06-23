@@ -42,7 +42,6 @@ import org.apache.pdfbox.cos.ICOSVisitor;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdfparser.PDFXRefStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.encryption.SecurityHandler;
 import org.apache.pdfbox.pdmodel.fdf.FDFDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
 import org.apache.pdfbox.util.Charsets;
@@ -1096,13 +1095,6 @@ public class COSWriter implements ICOSVisitor, Closeable
 	 @Override
 	 public Object visitFromStream(COSStream obj) throws IOException
 	 {
-		 if (willEncrypt)
-		 {
-			 pdDocument.getEncryption().getSecurityHandler()
-			 .encryptStream(obj, currentObjectKey.getNumber(),
-					 currentObjectKey.getGeneration());
-		 }
-
 		 COSObject lengthObject = null;
 		 // check if the length object is required to be direct, like in
 		 // a cross reference stream dictionary
@@ -1163,14 +1155,6 @@ public class COSWriter implements ICOSVisitor, Closeable
 	 @Override
 	 public Object visitFromString(COSString obj) throws IOException
 	 {
-		 if (willEncrypt)
-		 {
-			 pdDocument.getEncryption().getSecurityHandler().encryptString(
-					 obj,
-					 currentObjectKey.getNumber(),
-					 currentObjectKey.getGeneration());
-		 }
-
 		 COSWriter.writeString(obj, getStandardOutput());
 		 return null;
 	 }
@@ -1231,16 +1215,7 @@ public class COSWriter implements ICOSVisitor, Closeable
 		 }
 		 else
 		 {
-			 if (pdDocument.getEncryption() != null)
-			 {
-				 SecurityHandler securityHandler = pdDocument.getEncryption().getSecurityHandler();
-				 securityHandler.prepareDocumentForEncryption(pdDocument);
-				 willEncrypt = true;
-			 }
-			 else
-			 {
-				 willEncrypt = false;
-			 }
+			 willEncrypt = false;
 		 }
 
 		 COSDocument cosDoc = pdDocument.getDocument();

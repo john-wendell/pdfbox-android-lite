@@ -16,7 +16,7 @@ import android.util.Log;
 /**
  * Soft mask.
  *
- * @author K�hn & Weyh Software, GmbH
+ * @author K'hn & Weyh Software, GmbH
  */
 public final class PDSoftMask implements COSObjectable
 {
