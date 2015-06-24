@@ -210,6 +210,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
     // explicit mask: RGB + Binary -> ARGB
     // soft mask: RGB + Gray -> ARGB
+    /*
     private Bitmap applyMask(Bitmap image, Bitmap mask, boolean isSoft)
             throws IOException
     {
@@ -267,7 +268,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
 //        return masked;
         return null;
-    }
+    }*/
 
     /**
      * Returns the Mask Image XObject associated with this image, or null if there is none.
